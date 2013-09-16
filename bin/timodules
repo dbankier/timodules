@@ -14,7 +14,7 @@ function longest(list) {
   return _.max(list, function(i) { return i.name.length; }).name.length;
 }
 function formatDisplay(item) {
-  return ((item.selected ? " ☑ " : " ☐ ") + item.name)[item.selected?'green':'white'] + (spaces(longest_name - item.name.length + 1)) + item.platform.blue + " " + item.version.cyan + "  " + item.scope.grey; 
+  return ((item.selected ? " ☑ " : " ☐ ") + item.name)[item.selected?'green':'white'] + (spaces(longest_name - item.name.length + 1)) + item.platform.blue + (item.version ? " " + item.version.cyan : "") + "  " + item.scope.grey; 
 }
 if (process.argv.length === 2) {
   timodules.getCurrent(process.cwd(), function(err, ver) {
@@ -34,12 +34,10 @@ if (process.argv.length === 2) {
           if(result.modules[scope].hasOwnProperty(platform)) {
           for (var name in result.modules[scope][platform]) {
             if(result.modules[scope][platform].hasOwnProperty(name)) {
-            for (var version in result.modules[scope][platform][name]) {
-            if(result.modules[scope][platform][name].hasOwnProperty(version)) {
               var current = {
                 name: name,
                 platform: platform,
-                version: version
+                version: null
               };
               var selected = false;
               if (_.where(result.current, current).length > 0) {
@@ -48,7 +46,23 @@ if (process.argv.length === 2) {
               current.selected = selected;
               current.scope = scope;
               temp_list.push(current);
-            }} 
+
+              for (var version in result.modules[scope][platform][name]) {
+              if(result.modules[scope][platform][name].hasOwnProperty(version)) {
+                var current = {
+                  name: name,
+                  platform: platform,
+                  version: version
+                };
+                var selected = false;
+                if (_.where(result.current, current).length > 0) {
+                  selected = true;
+                }
+                current.selected = selected;
+                current.scope = scope;
+                temp_list.push(current);
+              }
+            } 
           }}
         }}
       }}
@@ -61,7 +75,7 @@ if (process.argv.length === 2) {
           case 'return':
             var selected = _.where(list.items.map(function(a) { return a.id;}), {selected:true});
             var xml = selected.map(function(a) {
-              return '\t\t<module platform="' + a.platform +'" version="' + a.version + '">' + a.name + "</module>";
+              return '\t\t<module platform="' + a.platform +'"' + (a.version? ' version="' + a.version + '"' : '') + '>' + a.name + "</module>";
             });
             xml = "\t<modules>\n" + xml.join("\n") + "\n\t</modules>\n";
             var tiapp = path.join(result.path, 'tiapp.xml');
