@@ -1,0 +1,86 @@
+#!/usr/bin/env node
+var timodules = require("../lib/timodules"),
+    path = require("path"),
+    _ = require("underscore"),
+    fs = require("fs"),
+    longest_name;
+    require("colors");
+
+function spaces(n) {
+  console.log(n);
+  return (new Array(n +1)).join(" ");
+}
+function longest(list) {
+  return _.max(list, function(i) { return i.name.length; }).name.length;
+}
+function formatDisplay(item) {
+  return ((item.selected ? " ☑ " : " ☐ ") + item.name)[item.selected?'green':'white'] + (spaces(longest_name - item.name.length + 1)) + item.platform.blue + " " + item.version.cyan + "  " + item.scope.grey; 
+}
+if (process.argv.length === 2) {
+  timodules.getCurrent(process.cwd(), function(err, ver) {
+    process.stdout.write(ver ? JSON.stringify(ver.current) : err);
+  });
+} else if (process.argv[2] === 'set') {
+  timodules.list(process.cwd(), function(err, result) {
+    if(err || !result.current) {
+      console.log("Could not find tiapp.xml");
+    } else {
+      List = require("term-list");
+      var temp_list = [];
+      var list = new List({ marker: '› '.cyan, markerLength: 2 });
+      for (var scope in result.modules) {
+        if(result.modules.hasOwnProperty(scope)) {
+        for (var platform in result.modules[scope]) {
+          if(result.modules[scope].hasOwnProperty(platform)) {
+          for (var name in result.modules[scope][platform]) {
+            if(result.modules[scope][platform].hasOwnProperty(name)) {
+            for (var version in result.modules[scope][platform][name]) {
+            if(result.modules[scope][platform][name].hasOwnProperty(version)) {
+              var current = {
+                name: name,
+                platform: platform,
+                version: version
+              };
+              var selected = false;
+              if (_.where(result.current, current).length > 0) {
+                selected = true;
+              }
+              current.selected = selected;
+              current.scope = scope;
+              temp_list.push(current);
+            }} 
+          }}
+        }}
+      }}
+      longest_name = longest(temp_list);
+      console.log("LONGEST NAME: " + longest_name);
+      temp_list.forEach(function(current) { list.add(current, formatDisplay(current))});
+      list.start();
+      list.on('keypress', function(key, item){
+        switch (key.name) {
+          case 'return':
+            var selected = _.where(list.items.map(function(a) { return a.id;}), {selected:true});
+            var xml = selected.map(function(a) {
+              return '\t\t<module platform="' + a.platform +'" version="' + a.version + '">' + a.name + "</module>";
+            });
+            xml = "\t<modules>\n" + xml.join("\n") + "\n\t</modules>\n";
+            var tiapp = path.join(result.path, 'tiapp.xml');
+            fs.writeFileSync(tiapp, 
+                             fs.readFileSync(tiapp).toString().replace(
+                               /(<modules>(.|\n)*<\/modules>|<modules\/>)/g, 
+                               xml));  
+
+            list.stop();
+            break;
+          case 'space':
+            var curr = _.where(list.items, {id: item})[0];
+            item.selected = !item.selected
+            curr.id = item;
+            curr.label = formatDisplay(item);
+            list.draw();
+            break;
+        }
+      });
+    }
+  });
+}
