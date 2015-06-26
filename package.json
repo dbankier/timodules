@@ -11,10 +11,11 @@
   "author": "David Bankier",
   "license": "MIT",
   "dependencies": {
-    "xml2js": "~0.2.8",
-    "underscore": "~1.5.2",
-    "term-list": "~0.2.0",
+    "appc-compat": "^1.0.0",
     "colors": "~0.6.2",
-    "tiapp": "0.0.1"
+    "term-list": "~0.2.0",
+    "tiapp": "0.0.1",
+    "underscore": "~1.5.2",
+    "xml2js": "~0.2.8"
   }
 }
