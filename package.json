@@ -1,6 +1,6 @@
 {
   "name": "timodules",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "titanium sdk modules tools",
   "main": "./lib/timodules.js",
   "scripts": {
