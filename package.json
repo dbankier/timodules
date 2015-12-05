@@ -14,7 +14,7 @@
     "appc-compat": "^1.0.0",
     "colors": "~0.6.2",
     "term-list": "~0.2.0",
-    "tiapp": "0.0.1",
+    "tiapp": "~0.0.3",
     "underscore": "~1.5.2",
     "xml2js": "~0.2.8"
   }
